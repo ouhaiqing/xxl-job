@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:include="include :: commonStyle" />
+    <link rel="stylesheet" href="${request.contextPath}/static/adminlte/plugins/iCheck/square/blue.css">
+    <title th:text="#{admin_name}"></title>
+</head>
+<body class="hold-transition login-page">
+<div class="login-box">
+    <div class="login-logo">
+        <a><b>XXL</b>JOB</a>
+    </div>
+    <form id="loginForm" method="post" >
+        <div class="login-box-body">
+            <p class="login-box-msg" th:text="#{admin_name}"></p>
+            <div class="form-group has-feedback">
+                <input type="text" name="userName" class="form-control" th:placeholder="#{login_username_placeholder}" maxlength="18" >
+                <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
+            </div>
+            <div class="form-group has-feedback">
+                <input type="password" name="password" class="form-control" th:placeholder="#{login_password_placeholder}" maxlength="18" >
+                <span class="glyphicon glyphicon-lock form-control-feedback"></span>
+            </div>
+            <div class="row">
+                <div class="col-xs-8">
+                    <div class="checkbox icheck">
+                        <label>
+                            <input type="checkbox" name="ifRemember"> [[#{login_remember_me}]]
+                        </label>
+                    </div>
+                </div><!-- /.col -->
+                <div class="col-xs-4">
+                    <button type="submit" class="btn btn-primary btn-block btn-flat">[[#{login_btn}]]</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<th:block th:include="include :: commonScript" />
+<script th:src="@{/static/adminlte/plugins/iCheck/icheck.min.js}"></script>
+
+<!--<script th:src="@{/static/js/login.1.js}"></script>-->
+<script type="text/javascript" th:inline="javascript">
+    $(function(){
+
+        // input iCheck
+        $('input').iCheck({
+            checkboxClass: 'icheckbox_square-blue',
+            radioClass: 'iradio_square-blue',
+            increaseArea: '20%' // optional
+        });
+
+        // login Form Valid
+        var loginFormValid = $("#loginForm").validate({
+            errorElement : 'span',
+            errorClass : 'help-block',
+            focusInvalid : true,
+            rules : {
+                userName : {
+                    required : true ,
+                    minlength: 4,
+                    maxlength: 18
+                },
+                password : {
+                    required : true ,
+                    minlength: 4,
+                    maxlength: 18
+                }
+            },
+            messages : {
+                userName : {
+                    required  : [[#{login_username_empty}]],
+                    minlength : [[#{login_username_lt_4}]]
+                },
+                password : {
+                    required  : [[#{login_password_empty}]]  ,
+                    minlength : [[#{login_password_lt_4}]]
+                    /*,maxlength:"登录密码不应超过18位"*/
+                }
+            },
+            highlight : function(element) {
+                $(element).closest('.form-group').addClass('has-error');
+            },
+            success : function(label) {
+                label.closest('.form-group').removeClass('has-error');
+                label.remove();
+            },
+            errorPlacement : function(error, element) {
+                element.parent('div').append(error);
+            },
+            submitHandler : function(form) {
+                $.post(base_url + "/login", $("#loginForm").serialize(), function(data, status) {
+                    if (data.code == "200") {
+                        layer.msg( [[#{login_success}]] );
+                        setTimeout(function(){
+                            window.location.href = base_url;
+                        }, 500);
+                    } else {
+                        layer.open({
+                            title: [[#{system_tips}]],
+                            btn: [ [[#{system_ok}]] ],
+                            content: (data.msg || [[#{login_fail}]] ),
+                            icon: '2'
+                        });
+                    }
+                });
+            }
+        });
+    });
+</script>
+
+</body>
+</html>

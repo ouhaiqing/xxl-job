@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:include="include :: commonStyle" />
+    <link rel="stylesheet" th:href="@{/static/plugins/codemirror/lib/codemirror.css}">
+    <link rel="stylesheet" th:href="@{/static/plugins/codemirror/addon/hint/show-hint.css}">
+    <title th:text="#{admin_name}"></title>
+    <style type="text/css">
+        .CodeMirror {
+            font-size:16px;
+            width: 100%;
+            height: 100%;
+            /*bottom: 0;
+            top: 0px;*/
+            position: absolute;
+        }
+    </style>
+</head>
+<body class="skin-blue fixed layout-top-nav">
+
+<div class="wrapper">
+
+    <header class="main-header">
+        <nav class="navbar navbar-static-top">
+            <div class="container">
+                <div class="navbar-header">
+                    <a class="navbar-brand"><b>Web</b>IDE</a>
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse">
+                        <i class="fa fa-bars"></i>
+                    </button>
+                </div>
+
+                <div class="collapse navbar-collapse pull-left" id="navbar-collapse">
+                    <ul class="nav navbar-nav">
+                        <li class="active" ><a href="javascript:;">
+                            <span class="sr-only">(current)</span>
+                            【<span th:each="item : ${GlueTypeEnum}" th:if="${item.name() == jobInfo.glueType}" th:text="${item.desc}"></span>】
+
+                            [[${jobInfo.jobDesc}]]
+                        </a></li>
+                    </ul>
+                </div>
+
+                <div class="navbar-custom-menu">
+                    <ul class="nav navbar-nav">
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false" th:utext="#{jobinfo_glue_rollback} + ' <span class=\'caret\'></span>'"></a>
+                            <ul class="dropdown-menu" role="menu">
+                                <!--是否为空-->
+                                <li th:if="${#lists.isEmpty(jobLogGlues)}">
+                                    <a href="javascript:;" class="source_version" version="version_now" glueType="${jobInfo.glueType}">
+                                        <th:block th:each="item : ${GlueTypeEnum}" th:if="${item.name() == jobInfo.glueType}" th:text="${item.desc}">
+                                        </th:block>
+                                        [[${jobInfo.glueRemark}]]
+                                    </a>
+
+                                </li>
+
+                                <!--是否不为空-->
+                                <li th:if="${not #lists.isEmpty(jobLogGlues)}" style="display: none;">
+                                    <a href="javascript:;" class="source_version" version="version_now" glueType="${jobInfo.glueType}">
+                                        <th:block th:each="item : ${GlueTypeEnum}" th:if="${item.name() == jobInfo.glueType}" th:text="${item.desc}">
+                                        </th:block>
+                                        [[${jobInfo.glueRemark}]]
+                                    </a>
+
+                                </li>
+                                <textarea id="version_now" style="display:none;" >[[${jobInfo.glueSource}]]</textarea>
+
+                                <th:block th:if="${not #lists.isEmpty(jobLogGlues)}">
+                                    <th:block th:each="glue : ${jobLogGlues}">
+                                        <li>
+                                            <a href="javascript:;" class="source_version" th:version="${'version_' + glue.id}" th:glueType="${glue.glueType}" >
+                                                <th:block th:each="item : ${GlueTypeEnum}" th:if="${item.name() == glue.glueType}" th:text="${item.desc}"></th:block>： [[${glue.glueRemark}]]
+                                            </a>
+                                        </li>
+                                        <textarea th:id="'version_' + ${glue.id}" style="display:none;" >[[${glue.glueSource}]]</textarea>
+                                    </th:block>
+                                </th:block>
+                            </ul>
+                        </li>
+                        <li id="save" >
+                            <a href="javascript:;"><i class='fa fa-fw fa-save' ></i>  [[#{system_save}]]
+                            </a>
+                        </li>
+                        <li>
+                            <a href="javascript:window.close();"><i class='fa fa-fw fa-close' ></i> [[#{system_close}]]
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+</div>
+</nav>
+</header>
+
+<div class="content-wrapper" id="ideWindow" ></div>
+
+<!-- footer -->
+<th:block th:include="include :: commonFooter" />
+</div>
+
+<!-- 保存.模态框 -->
+<div class="modal fade" id="saveModal" tabindex="-1" role="dialog"  aria-hidden="true">
+    <div class="modal-dialog ">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title"> <i class='fa fa-fw fa-save'></i> [[#{system_save}]]</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-horizontal form" role="form" >
+                    <div class="form-group">
+                        <label for="lastname" class="col-sm-2 control-label" th:text="#{jobinfo_glue_remark}"><font color="red">*</font></label>
+                        <div class="col-sm-10"><input type="text" class="form-control" id="glueRemark" th:placeholder="#{system_please_input} + #{jobinfo_glue_remark}" maxlength="64" ></div>
+                    </div>
+                    <hr>
+                    <div class="form-group">
+                        <div class="col-sm-offset-3 col-sm-6">
+                            <button type="button" class="btn btn-primary ok"  th:text="#{system_save}"></button>
+                            <button type="button" class="btn btn-default" data-dismiss="modal" th:text="#{system_cancel}"></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block th:include="include :: commonScript" />
+
+
+
+<script th:src="@{/static/plugins/codemirror/lib/codemirror.js}"></script>
+<script type="text/javascript" th:inline="javascript">
+    var glueTypeModeSrc = "/static/plugins/codemirror/mode/clike/clike.js";
+    var glueTypeModeSrc02 = '';
+    var glueTypeIdeMode = "text/x-java";
+    var glueType = [[${jobInfo.glueType}]];
+
+    if(glueType=="GLUE_GROOVY"){
+        glueTypeModeSrc = base_url + "/static/plugins/codemirror/mode/clike/clike.js";
+        glueTypeIdeMode = "text/x-java";
+    } else if(glueType=="GLUE_SHELL"){
+        glueTypeModeSrc = base_url + "/static/plugins/codemirror/mode/shell/shell.js";
+        glueTypeIdeMode = "text/x-sh";
+    }else if(glueType=="GLUE_PYTHON"){
+        glueTypeModeSrc = base_url + "/static/plugins/codemirror/mode/python/python.js";
+        glueTypeIdeMode = "text/x-python";
+    }else if(glueType=="GLUE_PHP"){
+        glueTypeModeSrc = base_url + "/static/plugins/codemirror/mode/php/php.js}";
+        glueTypeIdeMode = "text/x-php";
+        glueTypeModeSrc02 = base_url + "/static/plugins/codemirror/mode/clike/clike.js";
+
+        document.write("<script type='text/javascript' src=" + glueTypeModeSrc02 +"></"+"script>");
+    }else if(glueType=="GLUE_NODEJS"){
+        glueTypeModeSrc = base_url + "/static/plugins/codemirror/mode/javascript/javascript.js";
+        glueTypeIdeMode = "text/javascript";
+    }else if(glueType=="GLUE_POWERSHELL"){
+        glueTypeModeSrc = base_url + "/static/plugins/codemirror/mode/powershell/powershell.js";
+        glueTypeIdeMode = "powershell";
+    }
+
+    document.write("<script type='text/javascript' src=" + glueTypeModeSrc +"></"+"script>");
+</script>
+
+<script th:src="@{/static/plugins/codemirror/addon/hint/show-hint.js}"></script>
+<script th:src="@{/static/plugins/codemirror/addon/hint/anyword-hint.js}"></script>
+
+
+<!--<script src="${request.contextPath}/static/js/jobcode.index.1.js"></script>-->
+<script type="text/javascript" th:inline="javascript">
+
+    var id = [[${jobInfo.id}]];
+    var ideMode = glueTypeIdeMode;
+
+    $(function() {
+
+        // init code editor
+        var codeEditor;
+        function initIde(glueSource) {
+            if (codeEditor == null) {
+                codeEditor = CodeMirror(document.getElementById("ideWindow"), {
+                    mode : ideMode,
+                    lineNumbers : true,
+                    matchBrackets : true,
+                    value: glueSource
+                });
+            } else {
+                codeEditor.setValue(glueSource);
+            }
+        }
+
+        initIde($("#version_now").val());
+
+        // code change
+        $(".source_version").click(function(){
+            var sourceId = $(this).attr('version');
+            var temp = $( "#" + sourceId ).val();
+
+            //codeEditor.setValue('');
+            initIde(temp);
+        });
+
+        // code source save
+        $("#save").click(function() {
+            $('#saveModal').modal({backdrop: false, keyboard: false}).modal('show');
+        });
+
+        $("#saveModal .ok").click(function() {
+
+            var glueSource = codeEditor.getValue();
+            var glueRemark = $("#glueRemark").val();
+
+            if (!glueRemark) {
+                layer.open({
+                    title: [[#{system_tips}]],
+                btn: [ [[#{system_ok}]] ],
+				content: [[#{system_please_input}]] + [[#{jobinfo_glue_remark}]] ,
+				icon: '2'
+			});
+                return;
+            }
+            if (glueRemark.length <4 || glueRemark.length > 100) {
+                layer.open({
+                    title: [[#{system_tips}]] ,
+                btn: [ [[#{system_ok}]] ],
+				content: [[#{jobinfo_glue_remark_limit}]] ,
+				icon: '2'
+			});
+                return;
+            }
+
+            $.ajax({
+                type : 'POST',
+                url : base_url + '/jobcode/save',
+                data : {
+                    'id' : id,
+                    'glueSource' : glueSource,
+                    'glueRemark' : glueRemark
+                },
+                dataType : "json",
+                success : function(data){
+                    if (data.code == 200) {
+                        layer.open({
+                            title: [[#{system_tips}]],
+                        btn: [ [[#{system_ok}]] ],
+						content: ([[#{system_save}]] + [[#{system_success}]]) ,
+						icon: '1',
+						end: function(layero, index){
+							//$(window).unbind('beforeunload');
+							window.location.reload();
+						}
+                        });
+                    } else {
+                        layer.open({
+                            title: [[#{system_tips}]],
+                        btn: [ [[#{system_ok}]] ],
+						content: (data.msg || ([[#{system_save}]] + [[#{system_fail}]]) ),
+						icon: '2'
+					});
+                    }
+                }
+            });
+
+        });
+
+        // before upload
+        /*$(window).bind('beforeunload',function(){
+            return 'Glue尚未保存，确定离开Glue编辑器？';
+        });*/
+
+    });
+
+</script>
+</body>
+</html>

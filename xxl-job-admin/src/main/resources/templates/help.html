@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:include="include :: commonStyle" />
+    <title th:text="#{admin_name}"></title>
+</head>
+<body class="hold-transition skin-blue sidebar-mini">
+<div class="wrapper">
+    <!-- header -->
+    <th:block th:include="include :: commonHeader" />
+    <!-- left -->
+    <th:block th:include="include :: commonLeft('help')" />
+
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <section class="content-header">
+            <h1 th:text="#{job_help}"></h1>
+        </section>
+
+        <!-- Main content -->
+        <section class="content">
+            <div class="callout callout-info">
+                <h4 th:text="#{admin_name_full}"></h4>
+                <br>
+                <p>
+                    <a target="_blank" href="https://github.com/xuxueli/xxl-job">Github</a>&nbsp;&nbsp;&nbsp;&nbsp;
+                    <iframe src="https://ghbtns.com/github-btn.html?user=xuxueli&repo=xxl-job&type=star&count=true" frameborder="0" scrolling="0" width="170px" height="20px" style="margin-bottom:-5px;"></iframe>
+                    <br><br>
+                    <a target="_blank" href="https://www.xuxueli.com/xxl-job/" th:text="#{job_help_document}"></a>
+                    <br><br>
+
+                </p>
+                <p></p>
+            </div>
+        </section>
+        <!-- /.content -->
+    </div>
+    <!-- /.content-wrapper -->
+
+    <!-- footer -->
+
+    <th:block th:include="include :: commonFooter" />
+</div>
+<th:block th:include="include :: commonScript" />
+</body>
+</html>

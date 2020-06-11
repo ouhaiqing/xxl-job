@@ -38,8 +38,7 @@ public class IndexController {
 
 		Map<String, Object> dashboardMap = xxlJobService.dashboardInfo();
 		model.addAllAttributes(dashboardMap);
-
-		return "index";
+        return "index";
 	}
 
     @RequestMapping("/chartInfo")

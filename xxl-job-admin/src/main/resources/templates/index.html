@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:include="include :: commonStyle" />
+    <link rel="stylesheet" th:href="@{/static/adminlte/bower_components/bootstrap-daterangepicker/daterangepicker.css}">
+    <title th:text="#{admin_name}"></title>
+</head>
+<body class="hold-transition skin-blue sidebar-mini">
+<div class="wrapper">
+    <!-- header -->
+    <th:block th:include="include :: commonHeader" />
+    <!-- left -->
+    <th:block th:include="include :: commonLeft('index')" />
+
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <section class="content-header">
+            <h1 th:text="#{job_dashboard_name}"></h1>
+            <!--
+            <h1>运行报表<small>任务调度中心</small></h1>
+            <ol class="breadcrumb">
+                <li><a><i class="fa fa-dashboard"></i>调度中心</a></li>
+                <li class="active">使用教程</li>
+            </ol>
+            -->
+        </section>
+
+        <!-- Main content -->
+        <section class="content">
+
+            <!-- 任务信息 -->
+            <div class="row">
+
+                <div class="col-md-4 col-sm-6 col-xs-12">
+                    <div class="info-box bg-aqua">
+                        <span class="info-box-icon"><i class="fa fa-flag-o"></i></span>
+
+                        <div class="info-box-content">
+                            <span class="info-box-text" th:text="#{job_dashboard_job_num}"></span>
+                            <span class="info-box-number" th:text="${jobInfoCount}"></span>
+
+                            <div class="progress">
+                                <div class="progress-bar" style="width: 100%"></div>
+                            </div>
+                            <span class="progress-description" th:text="#{job_dashboard_job_num_tip}"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4 col-sm-6 col-xs-12" >
+                    <div class="info-box bg-yellow">
+                        <span class="info-box-icon"><i class="fa fa-calendar"></i></span>
+
+                        <div class="info-box-content">
+                            <span class="info-box-text" th:text="#{job_dashboard_trigger_num}"></span>
+                            <span class="info-box-number" th:text="${jobLogCount}"></span>
+
+                            <div class="progress">
+                                <div class="progress-bar" style="width: 100%" ></div>
+                            </div>
+                            <span class="progress-description" th:text="#{job_dashboard_trigger_num_tip}">
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4 col-sm-6 col-xs-12">
+                    <div class="info-box bg-green">
+                        <span class="info-box-icon"><i class="fa ion-ios-settings-strong"></i></span>
+
+                        <div class="info-box-content">
+                            <span class="info-box-text" th:text="#{job_dashboard_jobgroup_num}"></span>
+                            <span class="info-box-number" th:text="${executorCount}"></span>
+
+                            <div class="progress">
+                                <div class="progress-bar" style="width: 100%"></div>
+                            </div>
+                            <span class="progress-description" th:text="#{job_dashboard_jobgroup_num_tip}"></span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="box">
+                        <div class="box-header with-border">
+                            <h3 class="box-title" th:text="#{job_dashboard_report}"></h3>
+
+                            <div class="pull-right box-tools">
+                                <button type="button" class="btn btn-primary btn-sm daterange pull-right" data-toggle="tooltip" id="filterTime" >
+                                    <i class="fa fa-calendar"></i>
+                                </button>
+                            </div>
+
+                        </div>
+                        <div class="box-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div id="lineChart" style="height: 350px;"></div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div id="pieChart" style="height: 350px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+    </div>
+
+    <th:block th:include="include :: commonFooter" />
+</div>
+<th:block th:include="include :: commonScript" />
+<!-- daterangepicker -->
+<script th:src="@{/static/adminlte/bower_components/moment/moment.min.js}"></script>
+<script th:src="@{/static/adminlte/bower_components/bootstrap-daterangepicker/daterangepicker.js}"></script>
+
+<script th:src="@{/static/plugins/echarts/echarts.common.min.js}"></script>
+<!--<script th:src="@{/static/js/index.js}"></script>-->
+<script type="text/javascript" th:inline="javascript">
+    /**
+     * Created by xuxueli on 17/4/24.
+     */
+    $(function () {
+
+        // filter Time
+        var rangesConf = {};
+        var daterangepicker_ranges_today = [[#{daterangepicker_ranges_today}]];
+        var daterangepicker_ranges_yesterday = [[#{daterangepicker_ranges_yesterday}]];
+        var daterangepicker_ranges_this_month = [[#{daterangepicker_ranges_this_month}]];
+        var daterangepicker_ranges_last_month = [[#{daterangepicker_ranges_last_month}]];
+        var daterangepicker_ranges_recent_week = [[#{daterangepicker_ranges_recent_week}]];
+        var daterangepicker_ranges_recent_month = [[#{daterangepicker_ranges_recent_month}]];
+
+        rangesConf[daterangepicker_ranges_today] = [moment().startOf('day'), moment().endOf('day')];
+        rangesConf[daterangepicker_ranges_yesterday] = [moment().subtract(1, 'days').startOf('day'), moment().subtract(1, 'days').endOf('day')];
+        rangesConf[daterangepicker_ranges_this_month] = [moment().startOf('month'), moment().endOf('month')];
+        rangesConf[daterangepicker_ranges_last_month] = [moment().subtract(1, 'months').startOf('month'), moment().subtract(1, 'months').endOf('month')];
+        rangesConf[daterangepicker_ranges_recent_week] = [moment().subtract(1, 'weeks').startOf('day'), moment().endOf('day')];
+        rangesConf[daterangepicker_ranges_recent_month] = [moment().subtract(1, 'months').startOf('day'), moment().endOf('day')];
+
+    $('#filterTime').daterangepicker({
+        autoApply:false,
+        singleDatePicker:false,
+        showDropdowns:false,        // 是否显示年月选择条件
+        timePicker: true, 			// 是否显示小时和分钟选择条件
+        timePickerIncrement: 10, 	// 时间的增量，单位为分钟
+        timePicker24Hour : true,
+        opens : 'left', //日期选择框的弹出位置
+        ranges: rangesConf,
+        locale : {
+            format: 'YYYY-MM-DD HH:mm:ss',
+            separator : ' - ',
+            customRangeLabel : [[#{daterangepicker_custom_name}]] ,
+            applyLabel : [[#{system_ok}]] ,
+            cancelLabel : [[#{system_cancel}]] ,
+            fromLabel : [[#{daterangepicker_custom_starttime}]] ,
+            toLabel : [[#{daterangepicker_custom_endtime}]] ,
+            daysOfWeek : [[#{daterangepicker_custom_daysofweek}]].split(',') ,        // '日', '一', '二', '三', '四', '五', '六'
+            monthNames : [[#{daterangepicker_custom_monthnames}]].split(',') ,        // '一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'
+            firstDay : 1
+        },
+            startDate: rangesConf[daterangepicker_ranges_recent_week][0] ,
+        endDate: rangesConf[daterangepicker_ranges_recent_week][1]
+    }, function (start, end, label) {
+            freshChartDate(start, end);
+        });
+    freshChartDate(rangesConf[daterangepicker_ranges_recent_week][0], rangesConf[daterangepicker_ranges_recent_week][1]);
+
+    /**
+     * fresh Chart Date
+     *
+     * @param startDate
+     * @param endDate
+     */
+    function freshChartDate(startDate, endDate) {
+        $.ajax({
+            type : 'POST',
+            url : base_url + '/chartInfo',
+            data : {
+                'startDate':startDate.format('YYYY-MM-DD HH:mm:ss'),
+                'endDate':endDate.format('YYYY-MM-DD HH:mm:ss')
+            },
+        dataType : "json",
+        success : function(data){
+        if (data.code == 200) {
+            lineChartInit(data)
+            pieChartInit(data);
+        } else {
+            layer.open({
+                title: [[#{system_tips}]] ,
+                        btn: [ [[#{system_ok}]] ],
+                        content: (data.msg || [[#{job_dashboard_report_loaddata_fail}]] ),
+                        icon: '2'
+                    });
+        }
+    }
+    });
+    }
+
+    /**
+     * line Chart Init
+     */
+    function lineChartInit(data) {
+        var option = {
+            title: {
+                text: [[#{job_dashboard_date_report}]]
+               },
+                    tooltip : {
+            trigger: 'axis',
+                axisPointer: {
+                type: 'cross',
+                    label: {
+                    backgroundColor: '#6a7985'
+                }
+            }
+        },
+        legend: {
+            data:[ [[#{joblog_status_suc}]], [[#{joblog_status_fail}]], [[#{joblog_status_running}]] ]
+               },
+                toolbox: {
+                feature: {
+                    /*saveAsImage: {}*/
+                }
+            },
+            grid: {
+                left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+            },
+            xAxis : [
+                {
+                    type : 'category',
+                    boundaryGap : false,
+                    data : data.content.triggerDayList
+                }
+            ],
+                yAxis : [
+                {
+                    type : 'value'
+                }
+            ],
+                series : [
+                {
+                    name:[[#{joblog_status_suc}]],
+                       type:'line',
+                       stack: 'Total',
+                       areaStyle: {normal: {}},
+                data: data.content.triggerDayCountSucList
+        },
+        {
+            name:[[#{joblog_status_fail}]],
+                       type:'line',
+                       stack: 'Total',
+                       label: {
+                           normal: {
+                               show: true,
+                               position: 'top'
+                           }
+        },
+        areaStyle: {normal: {}},
+        data: data.content.triggerDayCountFailList
+    },
+        {
+            name:[[#{joblog_status_running}]],
+                       type:'line',
+                       stack: 'Total',
+                       areaStyle: {normal: {}},
+        data: data.content.triggerDayCountRunningList
+    }
+    ],
+        color:['#00A65A', '#c23632', '#F39C12']
+    };
+
+    var lineChart = echarts.init(document.getElementById('lineChart'));
+    lineChart.setOption(option);
+    }
+
+    /**
+     * pie Chart Init
+     */
+    function pieChartInit(data) {
+        var option = {
+            title : {
+                text: [[#{job_dashboard_rate_report}]] ,
+                /*subtext: 'subtext',*/
+                x:'center'
+            },
+                    tooltip : {
+            trigger: 'item',
+                formatter: "{b} : {c} ({d}%)"
+        },
+        legend: {
+            orient: 'vertical',
+                left: 'left',
+                data: [ [[#{joblog_status_suc}]], [[#{joblog_status_fail}]], [[#{joblog_status_running}]] ]
+            },
+                series : [
+                {
+                    //name: '分布比例',
+                    type: 'pie',
+                    radius : '55%',
+                    center: ['50%', '60%'],
+                    data:[
+                        {
+                            name:[[#{joblog_status_suc}]],
+                            value:data.content.triggerCountSucTotal
+                        },
+                                {
+                                    name:[[#{joblog_status_fail}]],
+                            value:data.content.triggerCountFailTotal
+                        },
+                                        {
+                                            name:[[#{joblog_status_running}]],
+                            value:data.content.triggerCountRunningTotal
+                        }
+                                            ],
+                                                itemStyle: {
+                emphasis: {
+                    shadowBlur: 10,
+                        shadowOffsetX: 0,
+                        shadowColor: 'rgba(0, 0, 0, 0.5)'
+                }
+            }
+        }
+        ],
+            color:['#00A65A', '#c23632', '#F39C12']
+        };
+            var pieChart = echarts.init(document.getElementById('pieChart'));
+            pieChart.setOption(option);
+        }
+
+        });
+
+
+</script>
+</body>
+</html>

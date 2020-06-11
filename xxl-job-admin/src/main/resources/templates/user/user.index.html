@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:include="include :: commonStyle" />
+  	<link rel="stylesheet" th:href="@{/static/adminlte/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css}">
+    <title th:text="#{admin_name}"></title>
+</head>
+<body class="hold-transition skin-blue sidebar-mini">
+<div class="wrapper">
+    <!-- header -->
+    <th:block th:include="include :: commonHeader" />
+    <!-- left -->
+    <th:block th:include="include :: commonLeft('user')" />
+	
+	<!-- Content Wrapper. Contains page content -->
+	<div class="content-wrapper">
+		<!-- Content Header (Page header) -->
+		<section class="content-header">
+			<h1 th:text="#{user_manage}"></h1>
+		</section>
+		
+		<!-- Main content -->
+	    <section class="content">
+	    
+	    	<div class="row">
+                <div class="col-xs-3">
+                    <div class="input-group">
+                        <span class="input-group-addon" th:text="#{user_role}"></span>
+                        <select class="form-control" id="role" >
+                            <option value="-1" th:text="#{system_all}"></option>
+                            <option value="1" th:text="#{user_role_admin}"></option>
+                            <option value="0" th:text="#{user_role_normal}"></option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-xs-3">
+                    <div class="input-group">
+                        <span class="input-group-addon" th:text="#{user_username}"></span>
+                        <input type="text" class="form-control" id="username" autocomplete="on" >
+                    </div>
+                </div>
+	            <div class="col-xs-1">
+	            	<button class="btn btn-block btn-info" id="searchBtn" th:text="#{system_search}"></button>
+	            </div>
+	            <div class="col-xs-2">
+	            	<button class="btn btn-block btn-success add" type="button" th:text="#{user_add}"></button>
+	            </div>
+          	</div>
+	    	
+			<div class="row">
+				<div class="col-xs-12">
+					<div class="box">
+			            <div class="box-body" >
+			              	<table id="user_list" class="table table-bordered table-striped" width="100%" >
+				                <thead>
+					            	<tr>
+                                        <th name="id">ID</th>
+                                        <th name="username" th:text="#{user_username}"></th>
+					                  	<th name="password" th:text="#{user_password}"></th>
+                                        <th name="role" th:text="#{user_role}"></th>
+					                  	<th name="permission" th:text="#{user_permission}"></th>
+					                  	<th th:text="#{system_opt}"></th>
+					                </tr>
+				                </thead>
+				                <tbody></tbody>
+				                <tfoot></tfoot>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+	    </section>
+	</div>
+	
+	<!-- footer -->
+<th:block th:include="include :: commonFooter" />
+</div>
+
+<!-- 新增.模态框 -->
+<div class="modal fade" id="addModal" tabindex="-1" role="dialog"  aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+            	<h4 class="modal-title" th:text="#{user_manage}"></h4>
+         	</div>
+         	<div class="modal-body">
+				<form class="form-horizontal form" role="form" >
+                    <div class="form-group">
+                        <label for="lastname" class="col-sm-2 control-label" th:text="#{user_username}"><font color="red">*</font></label>
+                        <div class="col-sm-8"><input type="text" class="form-control" name="username" th:placeholder="#{system_please_input} + #{user_username}" maxlength="20" ></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="lastname" class="col-sm-2 control-label" th:text="#{user_password}"><font color="red">*</font></label>
+                        <div class="col-sm-8"><input type="text" class="form-control" name="password" th:placeholder="#{system_please_input} + #{user_password}" maxlength="20" ></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="lastname" class="col-sm-2 control-label" th:text="#{user_role}"><font color="red">*</font></label>
+                        <div class="col-sm-10">
+                            <input type="radio" name="role" value="0" checked th:text="#{user_role_normal}"/>
+                            &nbsp;&nbsp;&nbsp;&nbsp;
+                            <input type="radio" name="role" value="1"  th:text="#{user_role_admin}"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="lastname" class="col-sm-2 control-label" th:text="#{user_permission}"><font color="black">*</font></label>
+                        <div class="col-sm-10">
+
+                            <label th:each="item : ${groupList}">
+                                <input  type="checkbox" name="permission" th:value="${item.id}" th:text="${item.title} +'('+ ${item.appname}+')'"/><br>
+                            </label>
+							<!--<#if groupList?exists && groupList?size gt 0>
+								<#list groupList as item>
+                                    <input type="checkbox" name="permission" value="${item.id}" />${item.title}(${item.appname})<br>
+								</#list>
+							</#if>-->
+
+                        </div>
+                    </div>
+
+                    <hr>
+					<div class="form-group">
+						<div class="col-sm-offset-3 col-sm-6">
+							<button type="submit" class="btn btn-primary" th:text="#{system_save}"></button>
+							<button type="button" class="btn btn-default" data-dismiss="modal" th:text="#{system_cancel}"></button>
+						</div>
+					</div>
+
+				</form>
+         	</div>
+		</div>
+	</div>
+</div>
+
+<!-- 更新.模态框 -->
+<div class="modal fade" id="updateModal" tabindex="-1" role="dialog"  aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+            	<h4 class="modal-title" th:text="#{user_update}"></h4>
+         	</div>
+         	<div class="modal-body">
+				<form class="form-horizontal form" role="form" >
+                    <div class="form-group">
+                        <label for="lastname" class="col-sm-2 control-label" th:text="#{user_username}"><font color="red">*</font></label>
+                        <div class="col-sm-8"><input type="text" class="form-control" name="username" th:placeholder="#{system_please_input} + #{user_username}" maxlength="20" readonly ></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="lastname" class="col-sm-2 control-label" th:text="#{user_password}"><font color="red">*</font></label>
+                        <div class="col-sm-8"><input type="text" class="form-control" name="password" th:placeholder="#{user_password_update_placeholder}" maxlength="20" ></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="lastname" class="col-sm-2 control-label" th:text="#{user_role}"><font color="red">*</font></label>
+                        <div class="col-sm-10">
+                            <input type="radio" name="role" value="0" th:text="#{user_role_normal}"/>
+                            &nbsp;&nbsp;&nbsp;&nbsp;
+                            <input type="radio" name="role" value="1" th:text="#{user_role_admin}"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="lastname" class="col-sm-2 control-label" th:text="#{user_permission}"><font color="black">*</font></label>
+                        <div class="col-sm-10">
+                            <label th:each="item : ${groupList}">
+                                <input  type="checkbox" name="permission" th:value="${item.id}" th:text="${item.title} +'('+ ${item.appname}+')'"/><br>
+                            </label>
+						<!--<#if groupList?exists && groupList?size gt 0>
+							<#list groupList as item>
+                                <input type="checkbox" name="permission" value="${item.id}" />${item.title}(${item.appname})<br>
+							</#list>
+						</#if>-->
+                        </div>
+                    </div>
+
+					<hr>
+					<div class="form-group">
+                        <div class="col-sm-offset-3 col-sm-6">
+							<button type="submit" class="btn btn-primary" th:text="#{system_save}"></button>
+							<button type="button" class="btn btn-default" data-dismiss="modal" th:text="#{system_cancel}"></button>
+                            <input type="hidden" name="id" >
+						</div>
+					</div>
+
+				</form>
+         	</div>
+		</div>
+	</div>
+</div>
+
+<th:block th:include="include :: commonScript" />
+<!-- DataTables -->
+<script th:src="@{/static/adminlte/bower_components/datatables.net/js/jquery.dataTables.min.js}"></script>
+<script th:src="@{/static/adminlte/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js}"></script>
+
+<!--<script th:src="@{/static/js/user.index.1.js}" th:inline="javascript"></script>-->
+<script type="text/javascript" th:inline="javascript">
+    $(function() {
+
+        // init date tables
+        var userListTable = $("#user_list").dataTable({
+            "deferRender": true,
+            "processing" : true,
+            "serverSide": true,
+            "ajax": {
+                url: base_url + "/user/pageList",
+                type:"post",
+                data : function ( d ) {
+                    var obj = {};
+                    obj.username = $('#username').val();
+                    obj.role = $('#role').val();
+                    obj.start = d.start;
+                    obj.length = d.length;
+                    return obj;
+                }
+            },
+            "searching": false,
+            "ordering": false,
+            //"scrollX": true,	// scroll x，close self-adaption
+            "columns": [
+                {
+                    "data": 'id',
+                    "visible" : false,
+                    "width":'10%'
+                },
+                {
+                    "data": 'username',
+                    "visible" : true,
+                    "width":'20%'
+                },
+                {
+                    "data": 'password',
+                    "visible" : true,
+                    "width":'20%',
+                    "render": function ( data, type, row ) {
+                        return '*********';
+                    }
+                },
+                {
+                    "data": 'role',
+                    "visible" : true,
+                    "width":'10%',
+                    "render": function ( data, type, row ) {
+                        if (data == 1) {
+                            return [[#{user_role_admin}]];
+                            } else {
+                                return [[#{user_role_normal}]];
+                            }
+                            }
+                        },
+                        {
+                            "data": 'permission',
+                            "width":'10%',
+                            "visible" : false
+                        },
+                        {
+                            "data": [[#{system_opt}]] ,
+						"width":'15%',
+	                	"render": function ( data, type, row ) {
+	                		return function(){
+								// html
+                                tableData['key'+row.id] = row;
+								var html = '<p id="'+ row.id +'" >'+
+									'<button class="btn btn-warning btn-xs update" type="button" >'+ [[#{system_opt_edit}]]+'</button>&nbsp;'+
+									'<button class="btn btn-danger btn-xs delete" type="button" >'+ [[#{system_opt_del}]]+'</button>  '+
+									'</p>';
+
+	                			return html;
+							};
+                        }
+                    }
+            ],
+            "language" : {
+                "sProcessing" : [[#{dataTable_sProcessing}]] ,
+                "sLengthMenu" : [[#{dataTable_sLengthMenu}]] ,
+                "sZeroRecords" : [[#{dataTable_sZeroRecords}]] ,
+                "sInfo" : [[#{dataTable_sInfo}]] ,
+                "sInfoEmpty" : [[#{dataTable_sInfoEmpty}]] ,
+                "sInfoFiltered" : [[#{dataTable_sInfoFiltered}]] ,
+                "sInfoPostFix" : "",
+                "sSearch" : [[#{dataTable_sSearch}]] ,
+                "sUrl" : "",
+                "sEmptyTable" : [[#{dataTable_sEmptyTable}]] ,
+                "sLoadingRecords" : [[#{dataTable_sLoadingRecords}]] ,
+                "sInfoThousands" : ",",
+                "oPaginate" : {
+                    "sFirst" : [[#{dataTable_sFirst}]] ,
+                    "sPrevious" : [[#{dataTable_sPrevious}]] ,
+                    "sNext" : [[#{dataTable_sNext}]] ,
+                    "sLast" : [[#{dataTable_sLast}]]
+			    },
+                "oAria" : {
+                    "sSortAscending" : [[#{dataTable_sSortAscending}]] ,
+                    "sSortDescending" : [[#{dataTable_sSortDescending}]]
+                }
+        }
+    });
+
+        // table data
+        var tableData = {};
+
+        // search btn
+        $('#searchBtn').on('click', function(){
+            userListTable.fnDraw();
+        });
+
+        // job operate
+        $("#user_list").on('click', '.delete',function() {
+            var id = $(this).parent('p').attr("id");
+
+            layer.confirm( [[#{system_ok}]] + [[#{system_opt_del}]] + '?', {
+			icon: 3,
+			title: [[#{system_tips}]] ,
+            btn: [ [[#{system_ok}]], [[#{system_cancel}]] ]
+		}, function(index){
+                layer.close(index);
+
+                $.ajax({
+                    type : 'POST',
+                    url : base_url + "/user/remove",
+                    data : {
+                        "id" : id
+                    },
+                    dataType : "json",
+                    success : function(data){
+                        if (data.code == 200) {
+                            layer.msg( [[#{system_success}]] );
+						userListTable.fnDraw(false);
+					} else {
+                                layer.msg( data.msg || [[#{system_opt_del}]] + [[#{system_fail}]] );
+					}
+                            }
+                        });
+            });
+        });
+
+        // add role
+        $("#addModal .form input[name=role]").change(function () {
+            var role = $(this).val();
+            if (role == 1) {
+                $("#addModal .form input[name=permission]").parents('.form-group').hide();
+            } else {
+                $("#addModal .form input[name=permission]").parents('.form-group').show();
+            }
+            $("#addModal .form input[name='permission']").prop("checked",false);
+        });
+
+        jQuery.validator.addMethod("myValid01", function(value, element) {
+            var length = value.length;
+            var valid = /^[a-z][a-z0-9]*$/;
+            return this.optional(element) || valid.test(value);
+        }, [[#{user_username_valid}]] );
+
+	// add
+	$(".add").click(function(){
+		$('#addModal').modal({backdrop: false, keyboard: false}).modal('show');
+    });
+    var addModalValidate = $("#addModal .form").validate({
+        errorElement : 'span',
+        errorClass : 'help-block',
+        focusInvalid : true,
+        rules : {
+            username : {
+                required : true,
+                rangelength:[4, 20],
+                myValid01: true
+            },
+            password : {
+                required : true,
+                rangelength:[4, 20]
+            }
+        },
+        messages : {
+            username : {
+                required : [[#{system_please_input}]] + [[#{user_username}]],
+                rangelength: [[#{system_lengh_limit}]] + "[4-20]"
+            },
+                    password : {
+        required : [[#{system_please_input}]] + [[#{user_password}]],
+                rangelength: [[#{system_lengh_limit}]] + "[4-20]"
+            }
+    },
+    highlight : function(element) {
+        $(element).closest('.form-group').addClass('has-error');
+    },
+    success : function(label) {
+        label.closest('.form-group').removeClass('has-error');
+        label.remove();
+    },
+    errorPlacement : function(error, element) {
+        element.parent('div').append(error);
+    },
+    submitHandler : function(form) {
+
+        var permissionArr = [];
+        $("#addModal .form input[name=permission]:checked").each(function(){
+            permissionArr.push($(this).val());
+        });
+
+        var paramData = {
+            "username": $("#addModal .form input[name=username]").val(),
+            "password": $("#addModal .form input[name=password]").val(),
+            "role": $("#addModal .form input[name=role]:checked").val(),
+            "permission": permissionArr.join(',')
+        };
+
+        $.post(base_url + "/user/add", paramData, function(data, status) {
+            if (data.code == "200") {
+                $('#addModal').modal('hide');
+
+                layer.msg( [[#{system_add_suc}]] );
+                    userListTable.fnDraw();
+    			} else {
+                    layer.open({
+                        title: [[#{system_tips}]] ,
+                        btn: [ [[#{system_ok}]] ],
+						content: (data.msg || [[#{system_add_fail}]]),
+						icon: '2'
+					});
+                }
+            });
+    }
+    });
+    $("#addModal").on('hide.bs.modal', function () {
+        $("#addModal .form")[0].reset();
+        addModalValidate.resetForm();
+        $("#addModal .form .form-group").removeClass("has-error");
+        $(".remote_panel").show();	// remote
+
+        $("#addModal .form input[name=permission]").parents('.form-group').show();
+    });
+
+    // update role
+    $("#updateModal .form input[name=role]").change(function () {
+        var role = $(this).val();
+        if (role == 1) {
+            $("#updateModal .form input[name=permission]").parents('.form-group').hide();
+        } else {
+            $("#updateModal .form input[name=permission]").parents('.form-group').show();
+        }
+        $("#updateModal .form input[name='permission']").prop("checked",false);
+    });
+
+    // update
+    $("#user_list").on('click', '.update',function() {
+
+        var id = $(this).parent('p').attr("id");
+        var row = tableData['key'+id];
+
+        // base data
+        $("#updateModal .form input[name='id']").val( row.id );
+        $("#updateModal .form input[name='username']").val( row.username );
+        $("#updateModal .form input[name='password']").val( '' );
+        $("#updateModal .form input[name='role'][value='"+ row.role +"']").click();
+        var permissionArr = [];
+        if (row.permission) {
+            permissionArr = row.permission.split(",");
+        }
+        $("#updateModal .form input[name='permission']").each(function () {
+            if($.inArray($(this).val(), permissionArr) > -1) {
+                $(this).prop("checked",true);
+            } else {
+                $(this).prop("checked",false);
+            }
+        });
+
+        // show
+        $('#updateModal').modal({backdrop: false, keyboard: false}).modal('show');
+    });
+    var updateModalValidate = $("#updateModal .form").validate({
+        errorElement : 'span',
+        errorClass : 'help-block',
+        focusInvalid : true,
+        highlight : function(element) {
+            $(element).closest('.form-group').addClass('has-error');
+        },
+        success : function(label) {
+            label.closest('.form-group').removeClass('has-error');
+            label.remove();
+        },
+        errorPlacement : function(error, element) {
+            element.parent('div').append(error);
+        },
+        submitHandler : function(form) {
+
+            var permissionArr =[];
+            $("#updateModal .form input[name=permission]:checked").each(function(){
+                permissionArr.push($(this).val());
+            });
+
+            var paramData = {
+                "id": $("#updateModal .form input[name=id]").val(),
+                "username": $("#updateModal .form input[name=username]").val(),
+                "password": $("#updateModal .form input[name=password]").val(),
+                "role": $("#updateModal .form input[name=role]:checked").val(),
+                "permission": permissionArr.join(',')
+            };
+
+            $.post(base_url + "/user/update", paramData, function(data, status) {
+                if (data.code == "200") {
+                    $('#updateModal').modal('hide');
+
+                    layer.msg( [[#{system_update_suc}]] );
+                    userListTable.fnDraw();
+                } else {
+                        layer.open({
+                            title: [[#{system_tips}]] ,
+                        btn: [ [[#{system_ok}]] ],
+                        content: (data.msg || [[#{system_update_fail}]]),
+                        icon: '2'
+                    });
+                    }
+                });
+        }
+    });
+    $("#updateModal").on('hide.bs.modal', function () {
+        $("#updateModal .form")[0].reset();
+        updateModalValidate.resetForm();
+        $("#updateModal .form .form-group").removeClass("has-error");
+        $(".remote_panel").show();	// remote
+
+        $("#updateModal .form input[name=permission]").parents('.form-group').show();
+    });
+
+    });
+
+</script>
+
+
+</body>
+</html>

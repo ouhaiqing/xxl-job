@@ -1,0 +1,83 @@
+### web
+server:
+  port: 8080
+  servlet:
+    context-path: /xxl-job-admin
+
+### actuator
+management:
+  health:
+    mail:
+      enabled: false
+  server:
+    servlet:
+      context-path: /actuator
+
+
+spring:
+  messages:
+    basename: static/i18n/messages          # 国际化资源文件路径
+  mvc:
+    servlet:
+      load-on-startup: 0
+    static-path-pattern: /static/**
+    resources:
+      static-locations: classpath:/static/
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    type: com.zaxxer.hikari.HikariDataSource
+    url: jdbc:mysql://127.0.0.1:3306/xxl_job?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=Asia/Shanghai
+    username: root
+    password: ouhaiqing419
+    hikari:
+      auto-commit: true
+      connection-test-query: SELECT 1
+      connection-timeout: 10000
+      idle-timeout: 30000
+      max-lifetime: 900000
+      maximum-pool-size: 30
+      minimum-idle: 10
+      pool-name: HikariCP
+  thymeleaf:                                # 模板引擎
+    mode: HTML
+    encoding: utf-8
+    cache: false                            # 缓存是否开启
+    prefix: classpath:/templates/
+      # freemarker:
+    #    charset: UTF-8
+    #  request-context-attribute: request
+      #settings:
+    # number_format: 0.##########
+    #suffix: .ftl
+    # templateLoaderPath: classpath:/templates/
+
+
+  mail:
+    host: smtp.qq.com
+    password: ouhaiqing419
+    port: 25
+    properties:
+      mail:
+        smtp:
+          auth: true
+          socketFactory:
+            class: javax.net.ssl.SSLSocketFactory
+          starttls:
+            enable: true
+            required: true
+    username: 504418508@qq.com
+
+xxl:
+  job:
+    i18n: zh_CN
+    accessToken: ''
+    logretentiondays: 30
+    triggerpool:
+      fast:
+        max: 200
+      slow:
+        max: 100
+
+
+mybatis:
+  mapper-locations: classpath:/mybatis-mapper/*Mapper.xml
